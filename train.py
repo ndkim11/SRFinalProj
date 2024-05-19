@@ -447,7 +447,7 @@ def main():
         f_log.write('Epoch {:03d}, train loss {:.3f}, val loss {:.3f}\n'.format(epoch, tloss, vloss))
         f_log.flush()
 
-        if args.use_tensorboard:
+        if args.use_tensorboard: 
             writer.add_scalar("Training Loss", tloss, epoch)
             writer.add_scalar("Validation Loss",vloss, epoch)
 
