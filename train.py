@@ -87,8 +87,8 @@ def pad_collate(batch):
     y_lens = [len(item) for item in yy]# < fill your code here >
 
     ## zero-pad to the longest length
-    xx_pad = nn.utils.rnn.pad_sequence(xx, batch_first=False, padding_value=0.0)# < fill your code here >
-    yy_pad = nn.utils.rnn.pad_sequence(yy, batch_first=False, padding_value=0.0)# < fill your code here >
+    xx_pad = nn.utils.rnn.pad_sequence(xx, batch_first=True, padding_value=0.0)# < fill your code here >
+    yy_pad = nn.utils.rnn.pad_sequence(yy, batch_first=True, padding_value=0.0)# < fill your code here >
 
     return xx_pad, yy_pad, x_lens, y_lens
 
