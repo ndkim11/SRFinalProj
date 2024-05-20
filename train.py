@@ -186,6 +186,7 @@ def process_epoch(model,loader,criterion,optimizer,trainmode=True):
     if trainmode:
         # < fill your code here >
         model.train()
+
     else:
         # < fill your code here >
         model.eval()
@@ -375,18 +376,20 @@ def main():
     # make directory for saving models and output
     assert args.save_path != ''
     
-    export_name = "lstm_epoch{}_{}".format(args.max_epoch, datetime.now().strftime('%m_%d_%H_%M'))
-    # export_name = "lstm_epoch{}_{}".format(args.max_epoch, )
-    args.save_path = os.path.join(args.save_path, export_name)
-    result_path = os.path.join(args.save_path, args.modelname)
-
-    os.makedirs(result_path,exist_ok=True)
-
-    writer = None
-    if args.use_tensorboard:
-        from torch.utils.tensorboard import SummaryWriter
-        writer = SummaryWriter(args.save_path)
-        print("Using tensorboard! Results will be stored in " + args.save_path)
+    if args.eval:
+        export_name = "Eval_{}_{}".format(args.max_epoch, datetime.now().strftime('%d_%H_%M'))
+        args.save_path = os.path.join(args.save_path, export_name)
+    
+    if not args.eval: #only in train mode we make a tensorboard
+        export_name = "Train_epoch{}_{}".format(args.max_epoch, datetime.now().strftime('%d_%H_%M'))
+        args.save_path = os.path.join(args.save_path, export_name)
+        writer = None
+        if args.use_tensorboard:
+            from torch.utils.tensorboard import SummaryWriter
+            writer = SummaryWriter(args.save_path)
+            print("Using tensorboard! Results will be stored in " + args.save_path)
+            
+    os.makedirs(args.save_path,exist_ok=True)
 
     ## code for inference - this uses val_path and val_list
     if args.eval:
@@ -438,7 +441,7 @@ def main():
 
         if vloss < bestVloss:
             # save checkpoint to file
-            save_file = '{}/model{:05d}.pt'.format(args.save_path,epoch)
+            save_file = '{}/best_model.pt'.format(args.save_path)
             print('Saving model {}'.format(save_file))
             torch.save(model.state_dict(), save_file)
 
@@ -447,8 +450,8 @@ def main():
         f_log.flush()
 
         if args.use_tensorboard: 
-            writer.add_scalar("Training Loss", tloss, epoch)
-            writer.add_scalar("Validation Loss",vloss, epoch)
+            writer.add_scalar("Training Loss", tloss, epoch+1)
+            writer.add_scalar("Validation Loss",vloss, epoch+1)
 
     if args.use_tensorboard:
         writer.flush()
