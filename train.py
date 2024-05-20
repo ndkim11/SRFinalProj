@@ -149,7 +149,7 @@ class SpeechRecognitionModel(nn.Module):
 
         ## define RNN layers as self.lstm - use a 3-layer bidirectional LSTM with 256 output size and 0.1 dropout
         # < fill your code here >
-        self.lstm = nn.LSTM(64,256,dropout=0.1,bidirectional=True,num_layers=3)
+        self.lstm = nn.LSTM(64,256,dropout=0.1,bidirectional=True,num_layers=3,batch_first=True)
 
         ## define the fully connected layer
         self.classifier = nn.Linear(512,n_classes)
@@ -198,7 +198,7 @@ def process_epoch(model,loader,criterion,optimizer,trainmode=True):
         for data in tepoch:
 
             ## Load x and y
-            x = data[0].cuda() #[]
+            x = data[0].cuda()
             y = data[1].cuda()
             y_len = torch.LongTensor(data[3])
 
@@ -434,7 +434,7 @@ def main():
 
         # < fill your code here >
         tloss = process_epoch(model, trainloader, ctcloss, optimizer, trainmode=True)
-        vloss = process_epoch(model, valloader, ctcloss, optimizer, trainmode=False) ##trainmode False 맞겠지?
+        vloss = process_epoch(model, valloader, ctcloss, optimizer, trainmode=False)
 
         if vloss < bestVloss:
             # save checkpoint to file
