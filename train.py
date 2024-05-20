@@ -204,8 +204,6 @@ def process_epoch(model,loader,criterion,optimizer,trainmode=True):
 
             # print("shape: ",y.shape)
             # < fill your code here >
-            x = x.transpose(0,1)
-            y = y.transpose(0,1)
             # Add some noise to x            
             x = x + torch.normal(mean=0, std=torch.std(x)*1e-3, size=x.shape).cuda()
 
@@ -294,6 +292,7 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
 
         # forward pass through the model
         # < fill your code here >
+        model.eval()
         with torch.no_grad():
             output = model(x)
             output = nn.functional.log_softmax(output, dim=2)
@@ -435,7 +434,7 @@ def main():
 
         # < fill your code here >
         tloss = process_epoch(model, trainloader, ctcloss, optimizer, trainmode=True)
-        vloss = process_epoch(model, valloader, ctcloss, optimizer, trainmode=False)
+        vloss = process_epoch(model, valloader, ctcloss, optimizer, trainmode=False) ##trainmode False 맞겠지?
 
         if vloss < bestVloss:
             # save checkpoint to file
