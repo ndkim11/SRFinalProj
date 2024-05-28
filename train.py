@@ -379,11 +379,11 @@ def main():
     assert args.save_path != ''
     
     if args.eval:
-        export_name = "Eval_{}_{}".format(args.max_epoch, datetime.now().strftime('%d_%H_%M'))
+        export_name = "Base_Eval_{}_date{}".format(args.max_epoch, datetime.now().strftime('%d_%H_%M'))
         args.save_path = os.path.join(args.save_path, export_name)
     
     if not args.eval: #only in train mode we make a tensorboard
-        export_name = "Train_epoch{}_{}".format(args.max_epoch, datetime.now().strftime('%d_%H_%M'))
+        export_name = "Base_Train_epoch{}_batch{}_date{}".format(args.max_epoch, args.batch_size, datetime.now().strftime('%d_%H_%M'))
         args.save_path = os.path.join(args.save_path, export_name)
         writer = None
         if args.use_tensorboard:

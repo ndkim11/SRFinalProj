@@ -126,33 +126,33 @@ class BucketingSampler(torch.utils.data.sampler.Sampler):
 
 class SpeechRecognitionModel(nn.Module):
 
-    def __init__(self, n_classes=11):
+    def __init__(self, n_classes=11, layers=8):
         super(SpeechRecognitionModel, self).__init__()
         
-        cnns = [nn.Dropout(0.1),  
-                nn.Conv1d(40,64,3, stride=1, padding=1),
-                nn.BatchNorm1d(64),
-                nn.ReLU(),
-                nn.Dropout(0.1),  
-                nn.Conv1d(64,64,3, stride=1, padding=1),
-                nn.BatchNorm1d(64),
-                nn.ReLU()] 
+        # cnns = [nn.Dropout(0.1),  
+        #         nn.Conv1d(40,64,3, stride=1, padding=1),
+        #         nn.BatchNorm1d(64),
+        #         nn.ReLU(),
+        #         nn.Dropout(0.1),  
+        #         nn.Conv1d(64,64,3, stride=1, padding=1),
+        #         nn.BatchNorm1d(64),
+        #         nn.ReLU()] 
 
-        for i in range(2):
-          cnns += [nn.Dropout(0.1),  
-                   nn.Conv1d(64,64, 3, stride=1, padding=1),
-                   nn.BatchNorm1d(64),
-                   nn.ReLU()]
+        # for i in range(2):
+        #   cnns += [nn.Dropout(0.1),  
+        #            nn.Conv1d(64,64, 3, stride=1, padding=1),
+        #            nn.BatchNorm1d(64),
+        #            nn.ReLU()]
 
-        ## define CNN layers
-        self.cnns = nn.Sequential(*nn.ModuleList(cnns))
+        # ## define CNN layers
+        # self.cnns = nn.Sequential(*nn.ModuleList(cnns))
 
         #Conformer input : (batch_size, sequence_length, channels)
         self.conformer = torchaudio.models.Conformer(
             input_dim = 40,
             num_heads = 4,
             ffn_dim = 128,
-            num_layers = 4,
+            num_layers = layers,
             depthwise_conv_kernel_size = 31,
             dropout = 0.1
         )
@@ -364,6 +364,7 @@ def main():
     parser.add_argument('--lr',         type=float, default=1e-4,     help='learning rate')
     parser.add_argument('--seed',       type=int, default=2222,     help='random seed initialisation')
     parser.add_argument('--weight_decay',type=float, default=1e-6, help='weight decay for Adam')
+    parser.add_argument('--layers',     type=int, default=8)
     
     ## relating to loading and saving
     parser.add_argument('--initial_model',  type=str, default='',   help='load initial model, e.g. for finetuning')
@@ -384,7 +385,7 @@ def main():
     char2index, index2char = load_label_json(args.labels_path)
 
     ## make an instance of the model on GPU
-    model = SpeechRecognitionModel(n_classes=len(char2index)+1).cuda()
+    model = SpeechRecognitionModel(n_classes=len(char2index)+1, layers = args.layers).cuda()
     print('Model loaded. Number of parameters:',sum(p.numel() for p in model.parameters()))
 
     ## load from initial model
@@ -395,11 +396,11 @@ def main():
     assert args.save_path != ''
     
     if args.eval:
-        export_name = "Eval_{}_{}".format(args.max_epoch, datetime.now().strftime('%d_%H_%M'))
+        export_name = "Conformer_Eval_{}_date{}".format(args.max_epoch, datetime.now().strftime('%d_%H_%M'))
         args.save_path = os.path.join(args.save_path, export_name)
     
     if not args.eval: #only in train mode we make a tensorboard
-        export_name = "Train_epoch{}_{}".format(args.max_epoch, datetime.now().strftime('%d_%H_%M'))
+        export_name = "Conformer_Train_epoch{}_batch_date{}".format(args.max_epoch, args.batch_size,datetime.now().strftime('%d_%H_%M'))
         args.save_path = os.path.join(args.save_path, export_name)
         writer = None
         if args.use_tensorboard:
