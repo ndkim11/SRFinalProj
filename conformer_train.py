@@ -149,23 +149,24 @@ class SpeechRecognitionModel(nn.Module):
 
         #Conformer input : (batch_size, sequence_length, channels)
         self.conformer = torchaudio.models.Conformer(
-            input_dim = 40,
+            input_dim = 80,
             num_heads = 4,
             ffn_dim = 128,
             num_layers = layers,
-            depthwise_conv_kernel_size = 31,
+            depthwise_conv_kernel_size = 32,
             dropout = 0.1
         )
 
         ## define RNN layers as self.lstm - use a 1-layer bidirectional LSTM with 256 output size and 0.1 dropout
         # < fill your code here >
-        self.lstm = nn.LSTM(40,256,dropout=0.1,bidirectional=True,num_layers=1,batch_first=True)
+        # self.lstm = nn.LSTM(40,256,dropout=0.1,bidirectional=True,num_layers=1,batch_first=True)
+        self.lstm = nn.LSTM(80,256,bidirectional=True,num_layers=1,batch_first=True)
 
         ## define the fully connected layer
         self.classifier = nn.Linear(512,n_classes)
 
-        self.preprocess   = torchaudio.transforms.MFCC(sample_rate=8000, n_mfcc=40) # out : (batch_size, mfcc components, sequence_length)
-        self.instancenorm = nn.InstanceNorm1d(40)
+        self.preprocess   = torchaudio.transforms.MFCC(sample_rate=8000, n_mfcc=80) # out : (batch_size, mfcc components, sequence_length)
+        self.instancenorm = nn.InstanceNorm1d(80)
 
     def forward(self, x):
 
@@ -359,12 +360,12 @@ def main():
 
 
     ## related to training
-    parser.add_argument('--max_epoch',  type=int, default=10,       help='number of epochs during training')
+    parser.add_argument('--max_epoch',  type=int, default=30,       help='number of epochs during training')
     parser.add_argument('--batch_size', type=int, default=20,      help='batch size')
     parser.add_argument('--lr',         type=float, default=1e-4,     help='learning rate')
     parser.add_argument('--seed',       type=int, default=2222,     help='random seed initialisation')
     parser.add_argument('--weight_decay',type=float, default=1e-6, help='weight decay for Adam')
-    parser.add_argument('--layers',     type=int, default=8)
+    parser.add_argument('--layers',     type=int, default=16)
     
     ## relating to loading and saving
     parser.add_argument('--initial_model',  type=str, default='',   help='load initial model, e.g. for finetuning')
@@ -386,7 +387,7 @@ def main():
 
     ## make an instance of the model on GPU
     model = SpeechRecognitionModel(n_classes=len(char2index)+1, layers = args.layers).cuda()
-    print('Model loaded. Number of parameters:',sum(p.numel() for p in model.parameters()))
+    print('Model loaded. Number of parameters: {:.3f} Million'.format(sum(p.numel() for p in model.parameters())/1000000))
 
     ## load from initial model
     if args.initial_model != '':
