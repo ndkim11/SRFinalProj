@@ -166,6 +166,7 @@ class SpeechRecognitionModel(nn.Module):
 
         ## pass the network through the CNN layers
         # < fill your code here >
+        print(x.shape)
         x = self.cnns(x)
 
         ## pass the network through the RNN layers - check the input dimensions of nn.LSTM() in:(batch,time,n_class)
@@ -176,6 +177,7 @@ class SpeechRecognitionModel(nn.Module):
         x = self.classifier(x)
 
         return x
+    
 
 ## ===================================================================
 ## Train an epoch on GPU
@@ -367,7 +369,7 @@ def main():
 
     ## make an instance of the model on GPU
     model = SpeechRecognitionModel(n_classes=len(char2index)+1).cuda()
-    print('Model loaded. Number of parameters:',sum(p.numel() for p in model.parameters()))
+    print('Model loaded. Number of parameters: {:.3f} Million'.format(sum(p.numel() for p in model.parameters())/1000000))
 
     ## load from initial model
     if args.initial_model != '':
