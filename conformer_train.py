@@ -126,7 +126,7 @@ class BucketingSampler(torch.utils.data.sampler.Sampler):
 
 class SpeechRecognitionModel(nn.Module):
 
-    def __init__(self, n_classes=11, layers=8):
+    def __init__(self, n_classes=11, layers=16):
         super(SpeechRecognitionModel, self).__init__()
         
         # cnns = [nn.Dropout(0.1),  
@@ -153,7 +153,7 @@ class SpeechRecognitionModel(nn.Module):
             num_heads = 4,
             ffn_dim = 128,
             num_layers = layers,
-            depthwise_conv_kernel_size = 32,
+            depthwise_conv_kernel_size = 31,
             dropout = 0.1
         )
 
