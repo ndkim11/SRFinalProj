@@ -157,9 +157,9 @@ class SpeechRecognitionModel(nn.Module):
             dropout = 0.1
         )
 
-        ## define RNN layers as self.lstm - use a 3-layer bidirectional LSTM with 256 output size and 0.1 dropout
+        ## define RNN layers as self.lstm - use a 1-layer bidirectional LSTM with 256 output size and 0.1 dropout
         # < fill your code here >
-        self.lstm = nn.LSTM(64,256,dropout=0.1,bidirectional=True,num_layers=3,batch_first=True)
+        self.lstm = nn.LSTM(40,256,dropout=0.1,bidirectional=True,num_layers=1,batch_first=True)
 
         ## define the fully connected layer
         self.classifier = nn.Linear(512,n_classes)
@@ -186,6 +186,8 @@ class SpeechRecognitionModel(nn.Module):
         ## pass the network through the RNN layers - check the input dimensions of nn.LSTM() in:(batch,time,n_class)
         # < fill your code here >
         # x = self.lstm(x.transpose(1,2))[0]
+        # LSTM decoder for Conformer
+        x = self.lstm(x)[0]
         ## pass the network through the classifier
         # x = (batch, time, )
         x = self.classifier(x)

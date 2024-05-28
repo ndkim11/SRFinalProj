@@ -166,7 +166,7 @@ class SpeechRecognitionModel(nn.Module):
 
         ## pass the network through the CNN layers
         # < fill your code here >
-        print(x.shape)
+        # print(x.shape)
         x = self.cnns(x)
 
         ## pass the network through the RNN layers - check the input dimensions of nn.LSTM() in:(batch,time,n_class)
