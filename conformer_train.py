@@ -371,6 +371,7 @@ def main():
     parser.add_argument('--labels_path',type=str, default='data/label.json')
     parser.add_argument('--train_path', type=str, default='data/kspon_train')
     parser.add_argument('--val_path',   type=str, default='data/kspon_eval')
+    parser.add_argument('--date', default=datetime.now().strftime('%d_%H_%M'))
 
 
     ## related to training
@@ -418,7 +419,7 @@ def main():
         args.save_path = os.path.join(args.save_path, export_name)
     
     if not args.eval: #only in train mode we make a tensorboard
-        export_name = "Conformer_Train_epoch{}_batch{}".format(args.max_epoch, args.batch_size)#datetime.now().strftime('%d_%H_%M')
+        export_name = "Conformer_Train_epoch{}_batch{}_conf{}_lstm{}_mfcc{}_dropout{}".format(args.max_epoch, args.batch_size, args.conf_layers, args.lstm_layers, args.mfcc, args.dropout)#datetime.now().strftime('%d_%H_%M')
         args.save_path = os.path.join(args.save_path, export_name)
         writer = None
         if args.use_tensorboard:
