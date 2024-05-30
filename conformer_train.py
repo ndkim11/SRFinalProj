@@ -7,6 +7,7 @@ import time
 import torch
 import torch.nn as nn
 import torchaudio
+from torchaudio.models.decoder import ctc_decoder
 import soundfile
 import numpy as np
 import editdistance
@@ -126,7 +127,7 @@ class BucketingSampler(torch.utils.data.sampler.Sampler):
 
 class SpeechRecognitionModel(nn.Module):
 
-    def __init__(self, n_classes=11, layers=16, mfcc = 40):
+    def __init__(self, n_classes=11, conf_layers=16, mfcc = 40, lstm_layers=2):
         super(SpeechRecognitionModel, self).__init__()
         
         # cnns = [nn.Dropout(0.1),  
@@ -153,7 +154,7 @@ class SpeechRecognitionModel(nn.Module):
             input_dim= mfcc,
             num_heads = 4,
             ffn_dim = 128,
-            num_layers = layers,
+            num_layers = conf_layers,
             depthwise_conv_kernel_size = 31,
             dropout = 0.1
         )
@@ -161,7 +162,7 @@ class SpeechRecognitionModel(nn.Module):
         ## define RNN layers as self.lstm - use a 1-layer bidirectional LSTM with 256 output size and 0.1 dropout
         # < fill your code here >
         # self.lstm = nn.LSTM(40,256,dropout=0.1,bidirectional=True,num_layers=1,batch_first=True)
-        self.lstm = nn.LSTM(mfcc,256,bidirectional=True,num_layers=1,batch_first=True)
+        self.lstm = nn.LSTM(mfcc,256,bidirectional=True,num_layers=lstm_layers,batch_first=True)
 
         ## define the fully connected layer
         self.classifier = nn.Linear(512,n_classes)
@@ -295,6 +296,19 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
     # initialise the greedy decoder
     greedy_decoder = GreedyCTCDecoder(blank=len(index2char))
 
+    # LM_WEIGHT = 3.23
+    # WORD_SCORE = -0.26
+
+    # beam_search_decoder = ctc_decoder(
+    #     lexicon=None,
+    #     tokens=,
+    #     lm=CTCDecoderLM,
+    #     nbest=3,
+    #     beam_size=1500,
+    #     lm_weight=LM_WEIGHT,
+    #     word_score=WORD_SCORE,    
+    # )
+
     # load data from JSON
     with open(data_list,'r') as f:
         data = json.load(f)
@@ -322,6 +336,7 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
         # decode using the greedy decoder
         # < fill your code here >
         pred = greedy_decoder(output.cpu().detach().squeeze())
+        # pred = beam_search_decoder(output.cpu().detach().squeeze())
 
         # convert to text
         out_text = ''.join([index2char[x] for x in pred])
@@ -366,7 +381,8 @@ def main():
     parser.add_argument('--lr',         type=float, default=1e-4,     help='learning rate')
     parser.add_argument('--seed',       type=int, default=2222,     help='random seed initialisation')
     parser.add_argument('--weight_decay',type=float, default=1e-6, help='weight decay for Adam')
-    parser.add_argument('--layers',     type=int, default=16)
+    parser.add_argument('--conf_layers', type=int, default=16)
+    parser.add_argument('--lstm_layers', type=int, default=2)
     parser.add_argument('--mfcc',       type=int, default=40)
     
     ## relating to loading and saving
@@ -388,7 +404,7 @@ def main():
     char2index, index2char = load_label_json(args.labels_path)
 
     ## make an instance of the model on GPU
-    model = SpeechRecognitionModel(n_classes=len(char2index)+1, layers = args.layers, mfcc=args.mfcc).cuda()
+    model = SpeechRecognitionModel(n_classes=len(char2index)+1, conf_layers = args.conf_layers, mfcc=args.mfcc, lstm_layers=args.lstm_layers).cuda()
     print('Model loaded. Number of parameters: {:.3f} Million'.format(sum(p.numel() for p in model.parameters())/1000000))
 
     ## load from initial model 
@@ -403,7 +419,7 @@ def main():
         args.save_path = os.path.join(args.save_path, export_name)
     
     if not args.eval: #only in train mode we make a tensorboard
-        export_name = "Conformer_Train_epoch{}_batch{}_date{}".format(args.max_epoch, args.batch_size,datetime.now().strftime('%d_%H_%M'))
+        export_name = "Conformer_Train_epoch{}_batch{}".format(args.max_epoch, args.batch_size)#datetime.now().strftime('%d_%H_%M')
         args.save_path = os.path.join(args.save_path, export_name)
         writer = None
         if args.use_tensorboard:
