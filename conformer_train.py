@@ -471,7 +471,7 @@ def main():
     bestVloss = 100
     ## Train for args.max_epoch epochs
     for epoch in range(0, args.max_epoch):
-
+        print("Processing epoch {epoch}")
         # < fill your code here >
         tloss = process_epoch(model, trainloader, ctcloss, optimizer, trainmode=True)
         vloss = process_epoch(model, valloader, ctcloss, optimizer, trainmode=False)
