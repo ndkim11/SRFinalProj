@@ -126,7 +126,7 @@ class BucketingSampler(torch.utils.data.sampler.Sampler):
 
 class SpeechRecognitionModel(nn.Module):
 
-    def __init__(self, n_classes=11, layers=16):
+    def __init__(self, n_classes=11, layers=16, mfcc = 40):
         super(SpeechRecognitionModel, self).__init__()
         
         # cnns = [nn.Dropout(0.1),  
@@ -149,7 +149,8 @@ class SpeechRecognitionModel(nn.Module):
 
         #Conformer input : (batch_size, sequence_length, channels)
         self.conformer = torchaudio.models.Conformer(
-            input_dim = 80,
+            # input_dim = 80,
+            input_dim= mfcc,
             num_heads = 4,
             ffn_dim = 128,
             num_layers = layers,
@@ -160,13 +161,13 @@ class SpeechRecognitionModel(nn.Module):
         ## define RNN layers as self.lstm - use a 1-layer bidirectional LSTM with 256 output size and 0.1 dropout
         # < fill your code here >
         # self.lstm = nn.LSTM(40,256,dropout=0.1,bidirectional=True,num_layers=1,batch_first=True)
-        self.lstm = nn.LSTM(80,256,bidirectional=True,num_layers=1,batch_first=True)
+        self.lstm = nn.LSTM(mfcc,256,bidirectional=True,num_layers=1,batch_first=True)
 
         ## define the fully connected layer
         self.classifier = nn.Linear(512,n_classes)
 
-        self.preprocess   = torchaudio.transforms.MFCC(sample_rate=8000, n_mfcc=80) # out : (batch_size, mfcc components, sequence_length)
-        self.instancenorm = nn.InstanceNorm1d(80)
+        self.preprocess   = torchaudio.transforms.MFCC(sample_rate=8000, n_mfcc= mfcc) # out : (batch_size, mfcc components, sequence_length)
+        self.instancenorm = nn.InstanceNorm1d(mfcc)
 
     def forward(self, x):
 
@@ -366,6 +367,7 @@ def main():
     parser.add_argument('--seed',       type=int, default=2222,     help='random seed initialisation')
     parser.add_argument('--weight_decay',type=float, default=1e-6, help='weight decay for Adam')
     parser.add_argument('--layers',     type=int, default=16)
+    parser.add_argument('--mfcc',       type=int, default=40)
     
     ## relating to loading and saving
     parser.add_argument('--initial_model',  type=str, default='',   help='load initial model, e.g. for finetuning')
@@ -386,10 +388,10 @@ def main():
     char2index, index2char = load_label_json(args.labels_path)
 
     ## make an instance of the model on GPU
-    model = SpeechRecognitionModel(n_classes=len(char2index)+1, layers = args.layers).cuda()
+    model = SpeechRecognitionModel(n_classes=len(char2index)+1, layers = args.layers, mfcc=args.mfcc).cuda()
     print('Model loaded. Number of parameters: {:.3f} Million'.format(sum(p.numel() for p in model.parameters())/1000000))
 
-    ## load from initial model
+    ## load from initial model 
     if args.initial_model != '':
         model.load_state_dict(torch.load(args.initial_model))
 
