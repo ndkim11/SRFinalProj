@@ -127,7 +127,7 @@ class BucketingSampler(torch.utils.data.sampler.Sampler):
 
 class SpeechRecognitionModel(nn.Module):
 
-    def __init__(self, n_classes=11, conf_layers=16, mfcc = 40, lstm_layers=2):
+    def __init__(self, n_classes=11, conf_layers=16, mfcc = 40, lstm_layers=2,dropout=0.1):
         super(SpeechRecognitionModel, self).__init__()
         
         # cnns = [nn.Dropout(0.1),  
@@ -156,7 +156,7 @@ class SpeechRecognitionModel(nn.Module):
             ffn_dim = 128,
             num_layers = conf_layers,
             depthwise_conv_kernel_size = 31,
-            dropout = 0.1
+            dropout = dropout
         )
 
         ## define RNN layers as self.lstm - use a 1-layer bidirectional LSTM with 256 output size and 0.1 dropout
@@ -205,11 +205,9 @@ class SpeechRecognitionModel(nn.Module):
 def process_epoch(model,loader,criterion,optimizer,trainmode=True):
     # Set the model to training or eval mode
     if trainmode:
-        # < fill your code here >
         model.train()
 
     else:
-        # < fill your code here >
         model.eval()
 
     ep_loss = 0
@@ -384,6 +382,7 @@ def main():
     parser.add_argument('--conf_layers', type=int, default=16)
     parser.add_argument('--lstm_layers', type=int, default=2)
     parser.add_argument('--mfcc',       type=int, default=40)
+    parser.add_argument('--dropout',    type=float,default=0.1)
     
     ## relating to loading and saving
     parser.add_argument('--initial_model',  type=str, default='',   help='load initial model, e.g. for finetuning')
@@ -404,7 +403,7 @@ def main():
     char2index, index2char = load_label_json(args.labels_path)
 
     ## make an instance of the model on GPU
-    model = SpeechRecognitionModel(n_classes=len(char2index)+1, conf_layers = args.conf_layers, mfcc=args.mfcc, lstm_layers=args.lstm_layers).cuda()
+    model = SpeechRecognitionModel(n_classes=len(char2index)+1, conf_layers = args.conf_layers, mfcc=args.mfcc, lstm_layers=args.lstm_layers, dropout=args.dropout).cuda()
     print('Model loaded. Number of parameters: {:.3f} Million'.format(sum(p.numel() for p in model.parameters())/1000000))
 
     ## load from initial model 
