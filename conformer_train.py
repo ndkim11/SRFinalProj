@@ -298,9 +298,10 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
     WORD_SCORE = -0.26
 
     beam_search_decoder = ctc_decoder(
-        lexicon=None,
-        tokens= './data/label.json',
-        lm='./kenlm/build/kenlm.arpa',
+        lexicon='./data/label.json',
+        # tokens= './data/label.json',
+        tokens =,
+        lm='./kenlm.arpa',
         nbest=3,
         beam_size=1500,
         lm_weight=LM_WEIGHT,
