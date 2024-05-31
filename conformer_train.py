@@ -298,9 +298,9 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
     WORD_SCORE = -0.26
 
     beam_search_decoder = ctc_decoder(
-        lexicon='./data/label.json',
-        # tokens= './data/label.json',
-        tokens =,
+        lexicon=None,
+        tokens= './data/label.json',
+        # tokens =,
         lm='./kenlm.arpa',
         nbest=3,
         beam_size=1500,
@@ -416,7 +416,7 @@ def main():
     assert args.save_path != ''
     
     if args.eval:
-        export_name = "Conformer_Eval_{}_date{}".format(args.max_epoch, datetime.now().strftime('%d_%H_%M'))
+        export_name = "Conformer_Eval_{}_date{}".format(args.initial_model, datetime.now().strftime('%d_%H_%M'))
         args.save_path = os.path.join(args.save_path, export_name)
     
     if not args.eval: #only in train mode we make a tensorboard
