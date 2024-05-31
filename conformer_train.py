@@ -299,7 +299,7 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
 
     beam_search_decoder = ctc_decoder(
         lexicon=None,
-        tokens= './data/label.json',
+        tokens= 'cleaned.txt',
         # tokens =,
         lm='./kenlm.arpa',
         nbest=3,
