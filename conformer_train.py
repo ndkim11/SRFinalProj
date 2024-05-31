@@ -294,18 +294,18 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
     # initialise the greedy decoder
     greedy_decoder = GreedyCTCDecoder(blank=len(index2char))
 
-    # LM_WEIGHT = 3.23
-    # WORD_SCORE = -0.26
+    LM_WEIGHT = 3.23
+    WORD_SCORE = -0.26
 
-    # beam_search_decoder = ctc_decoder(
-    #     lexicon=None,
-    #     tokens=,
-    #     lm=CTCDecoderLM,
-    #     nbest=3,
-    #     beam_size=1500,
-    #     lm_weight=LM_WEIGHT,
-    #     word_score=WORD_SCORE,    
-    # )
+    beam_search_decoder = ctc_decoder(
+        lexicon=None,
+        tokens= './data/label.json',
+        lm='./kenlm/build/kenlm.arpa',
+        nbest=3,
+        beam_size=1500,
+        lm_weight=LM_WEIGHT,
+        word_score=WORD_SCORE,    
+    )
 
     # load data from JSON
     with open(data_list,'r') as f:
@@ -334,7 +334,7 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
         # decode using the greedy decoder
         # < fill your code here >
         pred = greedy_decoder(output.cpu().detach().squeeze())
-        # pred = beam_search_decoder(output.cpu().detach().squeeze())
+        beam_pred = beam_search_decoder(output.cpu().detach().squeeze())
 
         # convert to text
         out_text = ''.join([index2char[x] for x in pred])
