@@ -126,20 +126,20 @@ class BucketingSampler(torch.utils.data.sampler.Sampler):
 
 class SpeechRecognitionModel(nn.Module):
 
-    def __init__(self, n_classes=11):
+    def __init__(self, n_classes=11,dropout=0.1, lstm_layers=3):
         super(SpeechRecognitionModel, self).__init__()
         
-        cnns = [nn.Dropout(0.1),  
+        cnns = [nn.Dropout(dropout),  
                 nn.Conv1d(40,64,3, stride=1, padding=1),
                 nn.BatchNorm1d(64),
                 nn.ReLU(),
-                nn.Dropout(0.1),  
+                nn.Dropout(dropout),  
                 nn.Conv1d(64,64,3, stride=1, padding=1),
                 nn.BatchNorm1d(64),
                 nn.ReLU()] 
 
         for i in range(2):
-          cnns += [nn.Dropout(0.1),  
+          cnns += [nn.Dropout(dropout),  
                    nn.Conv1d(64,64, 3, stride=1, padding=1),
                    nn.BatchNorm1d(64),
                    nn.ReLU()]
@@ -149,7 +149,7 @@ class SpeechRecognitionModel(nn.Module):
 
         ## define RNN layers as self.lstm - use a 3-layer bidirectional LSTM with 256 output size and 0.1 dropout
         # < fill your code here >
-        self.lstm = nn.LSTM(64,256,dropout=0.1,bidirectional=True,num_layers=3,batch_first=True)
+        self.lstm = nn.LSTM(64,256,dropout=dropout,bidirectional=True,num_layers=lstm_layers,batch_first=True)
 
         ## define the fully connected layer
         self.classifier = nn.Linear(512,n_classes)
@@ -284,7 +284,7 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
     results = []
 
     for file in tqdm(data):
-
+        
         # read the wav file and convert to PyTorch format
         audio, _ = soundfile.read(os.path.join(data_path, file['file']))
         # < fill your code here >
@@ -348,6 +348,8 @@ def main():
     parser.add_argument('--lr',         type=float, default=1e-4,     help='learning rate')
     parser.add_argument('--seed',       type=int, default=2222,     help='random seed initialisation')
     parser.add_argument('--weight_decay',type=float, default=1e-6, help='weight decay for Adam')
+    parser.add_argument('--lstm_layers', type=int, default=3)
+    parser.add_argument('--dropout',    type=float, default=0.1)
     
     ## relating to loading and saving
     parser.add_argument('--initial_model',  type=str, default='',   help='load initial model, e.g. for finetuning')
@@ -436,6 +438,7 @@ def main():
     bestVloss = 100
     ## Train for args.max_epoch epochs
     for epoch in range(0, args.max_epoch):
+        print(f"Processing epoch {epoch}")
 
         # < fill your code here >
         tloss = process_epoch(model, trainloader, ctcloss, optimizer, trainmode=True)
