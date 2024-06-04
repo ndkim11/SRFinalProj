@@ -300,9 +300,7 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
         x = x.unsqueeze(dim=0)
         # print('x :', x.shape)
 
-
         # forward pass through the model
-        
         model.eval()
         with torch.no_grad():
             output = model(x)
@@ -310,7 +308,8 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
             output = output.transpose(0,1)
 
         # decode using the greedy decoder Out : [batch,time,labels]
-        # pred = greedy_decoder(output.cpu().detach().squeeze())
+        # pred = greedy_decoder(output.cpu().detach().squeeze())        # convert to text
+        # text = ''.join([index2char[x] for x in pred])
 
         text = decoder.decode(logits=output.cpu().detach().squeeze().numpy())
         text = text.replace(' ', '')
