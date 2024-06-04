@@ -59,7 +59,7 @@ class SpeechDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
 
         # read audio using soundfile.read
-        # < fill your code here >
+        
         audio = self.data[index]['file']
         # print(audio)
         audio, _ = soundfile.read(os.path.join(self.dataset_path, audio))
@@ -85,12 +85,12 @@ def pad_collate(batch):
     (xx, yy) = zip(*batch)
 
     ## compute lengths of each item in xx and yy
-    x_lens = [len(item) for item in xx]# < fill your code here >
-    y_lens = [len(item) for item in yy]# < fill your code here >
+    x_lens = [len(item) for item in xx]
+    y_lens = [len(item) for item in yy]
 
     ## zero-pad to the longest length
-    xx_pad = nn.utils.rnn.pad_sequence(xx, batch_first=True, padding_value=0.0)# < fill your code here >
-    yy_pad = nn.utils.rnn.pad_sequence(yy, batch_first=True, padding_value=0.0)# < fill your code here >
+    xx_pad = nn.utils.rnn.pad_sequence(xx, batch_first=True, padding_value=0.0)
+    yy_pad = nn.utils.rnn.pad_sequence(yy, batch_first=True, padding_value=0.0)
 
     return xx_pad, yy_pad, x_lens, y_lens
 
@@ -130,24 +130,6 @@ class SpeechRecognitionModel(nn.Module):
 
     def __init__(self, n_classes=11, conf_layers=16, mfcc = 40, lstm_layers=2,dropout=0.1):
         super(SpeechRecognitionModel, self).__init__()
-        
-        # cnns = [nn.Dropout(0.1),  
-        #         nn.Conv1d(40,64,3, stride=1, padding=1),
-        #         nn.BatchNorm1d(64),
-        #         nn.ReLU(),
-        #         nn.Dropout(0.1),  
-        #         nn.Conv1d(64,64,3, stride=1, padding=1),
-        #         nn.BatchNorm1d(64),
-        #         nn.ReLU()] 
-
-        # for i in range(2):
-        #   cnns += [nn.Dropout(0.1),  
-        #            nn.Conv1d(64,64, 3, stride=1, padding=1),
-        #            nn.BatchNorm1d(64),
-        #            nn.ReLU()]
-
-        # ## define CNN layers
-        # self.cnns = nn.Sequential(*nn.ModuleList(cnns))
 
         #Conformer input : (batch_size, sequence_length, channels)
         self.conformer = torchaudio.models.Conformer(
@@ -161,7 +143,7 @@ class SpeechRecognitionModel(nn.Module):
         )
 
         ## define RNN layers as self.lstm - use a 1-layer bidirectional LSTM with 256 output size and 0.1 dropout
-        # < fill your code here >
+        
         # self.lstm = nn.LSTM(40,256,dropout=0.1,bidirectional=True,num_layers=1,batch_first=True)
         self.lstm = nn.LSTM(mfcc,256,bidirectional=True,num_layers=lstm_layers,batch_first=True)
 
@@ -222,7 +204,6 @@ def process_epoch(model,loader,criterion,optimizer,trainmode=True):
             y_len = torch.LongTensor(data[3])
 
             # print("shape: ",y.shape)
-            # < fill your code here >
             # Add some noise to x            
             x = x + torch.normal(mean=0, std=torch.std(x)*1e-3, size=x.shape).cuda()
 
@@ -238,7 +219,6 @@ def process_epoch(model,loader,criterion,optimizer,trainmode=True):
             loss = criterion(output, y, x_len, y_len)
 
             if trainmode:
-              # < fill your code here >
               loss.backward()
               optimizer.step()
               optimizer.zero_grad()
@@ -272,7 +252,7 @@ class GreedyCTCDecoder(torch.nn.Module):
           List[str]: The resulting transcript        
         """
         
-        # < fill your code here >
+        
         indices = torch.argmax(emission, dim=-1)
         indices = torch.unique_consecutive(indices, dim=-1)
         indices = indices.numpy()
@@ -315,14 +295,14 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
 
         # read the wav file and convert to PyTorch format
         audio, _ = soundfile.read(os.path.join(data_path, file['file']))
-        # < fill your code here >
+        
         x = torch.FloatTensor(audio).cuda()
         x = x.unsqueeze(dim=0)
         # print('x :', x.shape)
 
 
         # forward pass through the model
-        # < fill your code here >
+        
         model.eval()
         with torch.no_grad():
             output = model(x)
@@ -331,31 +311,16 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
 
         # decode using the greedy decoder Out : [batch,time,labels]
         pred = greedy_decoder(output.cpu().detach().squeeze())
-<<<<<<< HEAD
-        # text = decoder.decode(logits=output.cpu().detach().squeeze().numpy())
-        # text = text.replace(' ', '')
-        # text = text.replace('^',' ')
-
-        # convert to text
-        out_text = ''.join([index2char[x] for x in pred])
-
-        # keep log of the results
-        file['pred'] = out_text
-        # file['pred'] = text
-        if 'text' in file:
-            file['edit_dist']   = editdistance.eval(out_text.replace(' ',''),file['text'].replace(' ',''))
-=======
 
         text = decoder.decode(logits=output.cpu().detach().squeeze().numpy())
-        # print(text)
+
         text = text.replace(' ', '')
         text = text.replace('^',' ')
-        # print(text)
+
 
         file['pred'] = text
         if 'text' in file:
             file['edit_dist']   = editdistance.eval(text.replace(' ',''),file['text'].replace(' ',''))
->>>>>>> df6bc0d8ce550f2f0d01687867cda6a674f1fc80
             file['gt_len']      = len(file['text'].replace(' ',''))
         results.append(file)
     
@@ -470,11 +435,11 @@ def main():
         prefetch_factor=4)
 
     ## define the optimizer with args.lr learning rate and appropriate weight decay
-    # < fill your code here >
+    
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
     ## set loss function with blank index
-    # < fill your code here >
+    
     ctcloss = nn.CTCLoss(blank=len(char2index)).cuda()
 
     ## initialise training log file
@@ -486,7 +451,7 @@ def main():
     ## Train for args.max_epoch epochs
     for epoch in range(0, args.max_epoch):
         print(f"Processing epoch {epoch}")
-        # < fill your code here >
+        
         tloss = process_epoch(model, trainloader, ctcloss, optimizer, trainmode=True)
         vloss = process_epoch(model, valloader, ctcloss, optimizer, trainmode=False)
 
