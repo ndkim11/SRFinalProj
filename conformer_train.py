@@ -330,8 +330,8 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
             output = output.transpose(0,1)
 
         # decode using the greedy decoder Out : [batch,time,labels]
-        # < fill your code here >
         pred = greedy_decoder(output.cpu().detach().squeeze())
+<<<<<<< HEAD
         # text = decoder.decode(logits=output.cpu().detach().squeeze().numpy())
         # text = text.replace(' ', '')
         # text = text.replace('^',' ')
@@ -344,6 +344,18 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
         # file['pred'] = text
         if 'text' in file:
             file['edit_dist']   = editdistance.eval(out_text.replace(' ',''),file['text'].replace(' ',''))
+=======
+
+        text = decoder.decode(logits=output.cpu().detach().squeeze().numpy())
+        # print(text)
+        text = text.replace(' ', '')
+        text = text.replace('^',' ')
+        # print(text)
+
+        file['pred'] = text
+        if 'text' in file:
+            file['edit_dist']   = editdistance.eval(text.replace(' ',''),file['text'].replace(' ',''))
+>>>>>>> df6bc0d8ce550f2f0d01687867cda6a674f1fc80
             file['gt_len']      = len(file['text'].replace(' ',''))
         results.append(file)
     
