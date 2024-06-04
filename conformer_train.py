@@ -307,21 +307,6 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
     alpha=0.5,  # tuned on a val set
     beta=1.0,  # tuned on a val set
     )
-    
-
-    # beam_search_decoder = ctc_decoder(
-    #     lexicon=None,
-    #     # tokens= 'cleaned.txt',
-    #     tokens = labels,
-    #     lm='kenlm/build/kenlm.binary',
-    #     nbest=3,
-    #     beam_size=1500,
-    #     lm_weight=LM_WEIGHT,
-    #     word_score=WORD_SCORE,
-    #     # blank_token=str(len(index2char))
-    #     blank_token = '_',
-    #     sil_token = ' '
-    # )
 
     # load data from JSON
     with open(data_list,'r') as f:
@@ -348,28 +333,16 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
             output = output.transpose(0,1)
 
         # decode using the greedy decoder Out : [batch,time,labels]
-        # < fill your code here >
         pred = greedy_decoder(output.cpu().detach().squeeze())
-        # beam_pred = beam_search_decoder(output.cpu().detach().squeeze())
-        # beam_pred = beam_search_decoder(output.cpu().detach())
-        # print(pred)
+
         text = decoder.decode(logits=output.cpu().detach().squeeze().numpy())
         # print(text)
         text = text.replace(' ', '')
         text = text.replace('^',' ')
         # print(text)
 
-        # convert to text
-        out_text = ''.join([index2char[x] for x in pred])
-        # out_text_beam = ''.join([index2char[x] for x in beam_pred])
-
-        # keep log of the results
-        # file['pred'] = out_text
-        # file['pred'] = out_text_beam
         file['pred'] = text
         if 'text' in file:
-            # file['edit_dist']   = editdistance.eval(out_text.replace(' ',''),file['text'].replace(' ',''))
-            # file['edit_dist']   = editdistance.eval(out_text_beam.replace(' ',''),file['text'].replace(' ',''))
             file['edit_dist']   = editdistance.eval(text.replace(' ',''),file['text'].replace(' ',''))
             file['gt_len']      = len(file['text'].replace(' ',''))
         results.append(file)
