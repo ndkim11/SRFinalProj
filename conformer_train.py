@@ -271,7 +271,7 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
     model.eval()
 
     # initialise the greedy decoder
-    greedy_decoder = GreedyCTCDecoder(blank=len(index2char))
+    # greedy_decoder = GreedyCTCDecoder(blank=len(index2char))
 
     with open('./data/label.json', encoding="utf-8") as label_file:
         labels = json.load(label_file)
@@ -310,13 +310,11 @@ def process_eval(model,data_path,data_list,index2char,save_path=None):
             output = output.transpose(0,1)
 
         # decode using the greedy decoder Out : [batch,time,labels]
-        pred = greedy_decoder(output.cpu().detach().squeeze())
+        # pred = greedy_decoder(output.cpu().detach().squeeze())
 
         text = decoder.decode(logits=output.cpu().detach().squeeze().numpy())
-
         text = text.replace(' ', '')
         text = text.replace('^',' ')
-
 
         file['pred'] = text
         if 'text' in file:
