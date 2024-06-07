@@ -2,6 +2,8 @@ checkpoints/
 data/ks_test_rel.json
 data/ks_val.json
 data/ks_train.json
+data/kspon_train/
+data/kspon_eval/
 kenlm/
 *.arpa
 *.binary
